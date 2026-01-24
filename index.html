@@ -2,733 +2,282 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suno AI プロンプトジェネレーター</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#e5e5e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Suno AI・テンプちゃん</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#667eea">
-    <link rel="apple-touch-icon" href="icon-192.png">
-
+    <link rel="apple-touch-icon" href="icon-512.png">
     <style>
-        * {
+        :root {
+            --bg: #ffffff;
+            --panel-bg: #f0f0f0;
+            --border: #ddd;
+            --font-ui: 11px;
+            --font-tag: 10px;
+            --font-editor: 10px;
+            --header-h: 40px;
+            --sidebar-w: 100px;
+        }
+
+        html, body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            position: fixed;
         }
 
         body {
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
-            padding: 0;
-            font-size: 14px;
-            overflow: hidden;
-        }
-
-        .container {
-            width: 100%;
-            height: 100vh;
-            margin: 0;
-            background: white;
+            font-family: sans-serif;
             display: flex;
             flex-direction: column;
+            background: var(--bg);
         }
 
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 8px 20px;
-            text-align: center;
+        header {
+            background: #e5e5e5;
+            padding: 4px 6px;
+            display: flex;
+            gap: 4px;
+            height: var(--header-h);
+            align-items: center;
             flex-shrink: 0;
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
         }
 
-        .header h1 {
-            font-size: 1em;
-            margin: 0;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-        }
-
-        .header p {
-            display: none;
-        }
-
-        .main-content {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        .left-panel {
-            width: 30%;
-            overflow-y: auto;
-            padding: 12px;
-            background: #f8f9fa;
-            border-right: 2px solid #dee2e6;
-        }
-
-        .right-panel {
-            width: 70%;
-            display: flex;
-            flex-direction: column;
-            background: white;
-        }
-
-        .lyrics-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-            overflow: hidden;
-        }
-
-        .output-section-bottom {
-            flex-shrink: 0;
-            background: #f8f9fa;
-            padding: 12px 15px;
-            border-top: 2px solid #dee2e6;
-            max-height: 180px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .section {
-            background: white;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #e9ecef;
-            margin-bottom: 10px;
-        }
-
-        .section-title {
-            font-size: 0.9em;
-            color: #667eea;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .form-group {
-            margin-bottom: 8px;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: #495057;
-            font-size: 0.8em;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        select {
-            width: 100%;
-            padding: 6px;
-            border: 1px solid #dee2e6;
+        input[type="text"], select {
+            font-size: var(--font-ui);
+            height: 32px;
+            border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 0.8em;
-            font-family: inherit;
-            transition: border-color 0.3s;
+            padding: 0 4px;
+        }
+        #saveName { flex: 2; min-width: 0; }
+        #loadSelect { flex: 1.5; min-width: 0; }
+
+        .btn-ui {
+            font-size: var(--font-ui);
+            height: 32px;
+            min-width: 65px;
+            background: #d0d0d0;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+            font-weight: bold;
         }
 
-        input:focus, select:focus {
-            outline: none;
-            border-color: #667eea;
+        #content-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #tag-sidebar {
+            width: var(--sidebar-w);
+            background: var(--panel-bg);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 4px;
+            flex-shrink: 0;
+            overscroll-behavior: contain;
+        }
+
+        .label-group {
+            font-size: 8px;
+            color: #888;
+            margin: 10px 0 4px 2px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .tag-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .tag-btn {
+            background: #fff;
+            border: 1px solid #ccc;
+            width: 100%;
+            min-height: 44px;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .tag-btn .name {
+            font-size: var(--font-tag);
+            font-weight: bold;
+            color: #111;
+        }
+        .tag-btn .desc {
+            font-size: 8px;
+            color: #666;
+            transform: scale(0.85);
+            text-align: center;
+        }
+        .tag-btn:active { background: #d0e0ff; border-color: #99b; }
+
+        .bottom-spacer {
+            height: 60dvh;
+            pointer-events: none;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
         }
 
         textarea {
             width: 100%;
-            resize: none;
-            flex: 1;
-            font-size: 0.95em;
-            line-height: 1.6;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            font-family: 'Courier New', monospace;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .lyrics-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .lyrics-title {
-            font-size: 1em;
-            color: #667eea;
-            font-weight: 600;
-        }
-
-        .char-count {
-            font-size: 0.75em;
-            color: #6c757d;
-        }
-
-        .helper-text {
-            font-size: 0.8em;
-            color: #6c757d;
-            margin-top: 4px;
-        }
-
-        .templates-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 8px;
-        }
-
-        .template-card {
-            background: white;
-            padding: 8px;
-            border-radius: 6px;
-            cursor: pointer;
-            border: 1px solid #dee2e6;
-            transition: all 0.3s;
-            text-align: center;
-        }
-
-        .template-card:hover {
-            border-color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-        }
-
-        .template-card.active {
-            border-color: #667eea;
-            background: #f0f3ff;
-        }
-
-        .template-emoji {
-            font-size: 1.5em;
-            margin-bottom: 4px;
-        }
-
-        .template-card .template-title {
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 2px;
-            font-size: 0.8em;
-        }
-
-        .template-card .template-style {
-            font-size: 0.7em;
-            color: #6c757d;
-        }
-
-        .tags-display {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            margin-top: 4px;
-        }
-
-        .tag {
-            background: #667eea;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 0.65em;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .tag-remove {
-            cursor: pointer;
-            font-weight: bold;
-            opacity: 0.8;
-        }
-
-        .tag-remove:hover {
-            opacity: 1;
-        }
-
-        .vocal-controls,
-        .structure-tags {
-            background: white;
-            padding: 8px;
-            border-radius: 4px;
-            margin-top: 8px;
-        }
-
-        .control-title {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: #495057;
-            font-size: 0.8em;
-        }
-
-        .control-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-        }
-
-        .control-tag {
-            background: #e9ecef;
-            padding: 4px 8px;
-            border-radius: 10px;
-            font-size: 0.7em;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .control-tag:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        .output-box {
-            background: #2d3748;
-            color: #e2e8f0;
-            padding: 10px;
-            border-radius: 6px;
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            overflow-y: auto;
-            line-height: 1.4;
-            font-size: 0.75em;
-            flex: 1;
-            margin-bottom: 8px;
-        }
-
-        .output-actions {
-            display: flex;
-            gap: 6px;
-            justify-content: flex-end;
-        }
-
-        .btn {
-            padding: 6px 12px;
+            height: 100%;
             border: none;
-            border-radius: 4px;
-            font-size: 0.75em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        .btn-small {
-            padding: 5px 10px;
-            font-size: 0.7em;
-        }
-
-        .example-section {
-            background: #fff3cd;
             padding: 8px;
-            border-radius: 4px;
-            margin-top: 8px;
-            border-left: 3px solid #ffc107;
-        }
-
-        .example-title {
-            font-weight: 600;
-            color: #856404;
-            margin-bottom: 5px;
-            font-size: 0.8em;
-        }
-
-        .example-text {
-            font-size: 0.75em;
-            color: #856404;
-            line-height: 1.5;
+            font-size: var(--font-editor);
+            line-height: 1.4;
+            resize: none;
+            outline: none;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎵 Suno AI プロンプトジェネレーター</h1>
-            <p>プロフェッショナルな楽曲プロンプトを簡単作成</p>
+
+<header>
+    <input type="text" id="saveName" placeholder="保存名">
+    <button class="btn-ui" onclick="saveTemplate()">保存</button>
+    <select id="loadSelect"><option value="">読込</option></select>
+    <button class="btn-ui" onclick="loadTemplate()">開く</button>
+</header>
+
+<div id="content-wrapper">
+    <aside id="tag-sidebar">
+        <div class="label-group">Structure</div>
+        <div class="tag-grid">
+            <button class="tag-btn" onclick="insertTag('[Intro]\n')"><span class="name">Intro</span><span class="desc">イントロ</span></button>
+            <button class="tag-btn" onclick="insertTag('[Verse1]\n')"><span class="name">Verse1</span><span class="desc">Aメロ</span></button>
+            <button class="tag-btn" onclick="insertTag('[Pre-Chorus]\n')"><span class="name">Pre-Cho</span><span class="desc">サビ前</span></button>
+            <button class="tag-btn" onclick="insertTag('[Chorus]\n')"><span class="name">Chorus</span><span class="desc">サビ</span></button>
+            <button class="tag-btn" onclick="insertTag('[Interlude]\n')"><span class="name">Inter</span><span class="desc">間奏</span></button>
+            <button class="tag-btn" onclick="insertTag('[Verse2]\n')"><span class="name">Verse2</span><span class="desc">Bメロ</span></button>
+            <button class="tag-btn" onclick="insertTag('[Bridge]\n')"><span class="name">Bridge</span><span class="desc">Cメロ</span></button>
+            <button class="tag-btn" onclick="insertTag('[Outro]\n')"><span class="name">Outro</span><span class="desc">アウトロ</span></button>
+            <button class="tag-btn" onclick="insertTag('[End]\n')"><span class="name">End</span><span class="desc">終了合図</span></button>
         </div>
-
-        <div class="main-content">
-            <div class="left-panel">
-                <div class="section">
-                    <h2 class="section-title">📋 テンプレート選択</h2>
-                    <div class="helper-text" style="margin-bottom: 12px;">
-                        好きなジャンルのテンプレートを選んでから、歌詞やスタイルをカスタマイズ
-                    </div>
-                    <div class="templates-grid">
-                        <div class="template-card" onclick="loadTemplate('rock')" data-template="rock">
-                            <div class="template-emoji">🎸</div>
-                            <div class="template-title">ギターロック</div>
-                            <div class="template-style">あいみょん風</div>
-                        </div>
-                        <div class="template-card" onclick="loadTemplate('enka')" data-template="enka">
-                            <div class="template-emoji">🎤</div>
-                            <div class="template-title">演歌</div>
-                            <div class="template-style">美空ひばり風</div>
-                        </div>
-                        <div class="template-card" onclick="loadTemplate('symphonic')" data-template="symphonic">
-                            <div class="template-emoji">⚔️</div>
-                            <div class="template-title">メタル</div>
-                            <div class="template-style">シンフォギア風</div>
-                        </div>
-                        <div class="template-card" onclick="loadTemplate('hyperpop')" data-template="hyperpop">
-                            <div class="template-emoji">✨</div>
-                            <div class="template-title">ハイパーポップ</div>
-                            <div class="template-style">中毒性</div>
-                        </div>
-                        <div class="template-card" onclick="loadTemplate('funk')" data-template="funk">
-                            <div class="template-emoji">🎹</div>
-                            <div class="template-title">ファンク</div>
-                            <div class="template-style">和モダン</div>
-                        </div>
-                        <div class="template-card" onclick="loadTemplate('vocaloid')" data-template="vocaloid">
-                            <div class="template-emoji">🎵</div>
-                            <div class="template-title">ボカロ</div>
-                            <div class="template-style">初音ミク風</div>
-                        </div>
-                        <div class="template-card" onclick="loadTemplate('anime')" data-template="anime">
-                            <div class="template-emoji">🌟</div>
-                            <div class="template-title">アニソン</div>
-                            <div class="template-style">熱血OP</div>
-                        </div>
-                        <div class="template-card" onclick="loadTemplate('ballad')" data-template="ballad">
-                            <div class="template-emoji">💔</div>
-                            <div class="template-title">バラード</div>
-                            <div class="template-style">宇多田風</div>
-                        </div>
-                        <div class="template-card" onclick="loadTemplate('citypop')" data-template="citypop">
-                            <div class="template-emoji">🌃</div>
-                            <div class="template-title">シティポップ</div>
-                            <div class="template-style">80年代</div>
-                        </div>
-                        <div class="template-card" onclick="loadTemplate('edm')" data-template="edm">
-                            <div class="template-emoji">🔊</div>
-                            <div class="template-title">EDM</div>
-                            <div class="template-style">クラブ</div>
-                        </div>
-                        <div class="template-card" onclick="loadTemplate('hiphop')" data-template="hiphop">
-                            <div class="template-emoji">🎧</div>
-                            <div class="template-title">ヒップホップ</div>
-                            <div class="template-style">ラップ</div>
-                        </div>
-                        <div class="template-card" onclick="loadTemplate('idol')" data-template="idol">
-                            <div class="template-emoji">🌸</div>
-                            <div class="template-title">アイドル</div>
-                            <div class="template-style">AKB風</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="section">
-                    <h2 class="section-title">⚙️ スタイルカスタマイズ</h2>
-                    <div class="form-group">
-                        <label for="genre">ジャンル</label>
-                        <select id="genre">
-                            <option value="">選択してください</option>
-                            <option value="J-Pop">J-Pop</option>
-                            <option value="Enka">演歌</option>
-                            <option value="Hyper J-Pop">ハイパーJ-Pop</option>
-                            <option value="Symphonic Metal">シンフォニックメタル</option>
-                            <option value="Modern Japanese Funk">モダン和風ファンク</option>
-                            <option value="Emotional Guitar Rock">エモーショナルギターロック</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="vocal-type">ボーカルタイプ</label>
-                        <select id="vocal-type">
-                            <option value="">選択してください</option>
-                            <option value="Powerful Female Vocal">力強い女性ボーカル</option>
-                            <option value="Soft Female Vocal">柔らかい女性ボーカル</option>
-                            <option value="Male Vocal">男性ボーカル</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="bpm">BPM</label>
-                        <input type="number" id="bpm" min="60" max="200" step="5" placeholder="例: 120">
-                    </div>
-
-                    <div class="form-group">
-                        <label>追加タグ</label>
-                        <select id="additional-tags" multiple size="6">
-                            <option value="Dramatic Strings">劇的な弦楽器</option>
-                            <option value="Acoustic Guitar">アコースティックギター</option>
-                            <option value="Heavy Bass">重厚なベース</option>
-                            <option value="Electronic">エレクトロニック</option>
-                            <option value="High Energy">ハイエナジー</option>
-                            <option value="Emotional">エモーショナル</option>
-                        </select>
-                        <div class="tags-display" id="selected-tags"></div>
-                    </div>
-                </div>
-
-                <div class="section">
-                    <h2 class="section-title">🏷️ タグ挿入</h2>
-                    <div class="structure-tags">
-                        <div class="control-title">構成タグ</div>
-                        <div class="control-tags">
-                            <span class="control-tag" onclick="insertTag('[Intro]')">イントロ</span>
-                            <span class="control-tag" onclick="insertTag('[Verse 1]')">バース1</span>
-                            <span class="control-tag" onclick="insertTag('[Chorus]')">コーラス</span>
-                            <span class="control-tag" onclick="insertTag('[Bridge]')">ブリッジ</span>
-                            <span class="control-tag" onclick="insertTag('[Outro]')">アウトロ</span>
-                        </div>
-                    </div>
-
-                    <div class="vocal-controls">
-                        <div class="control-title">歌唱タグ</div>
-                        <div class="control-tags">
-                            <span class="control-tag" onclick="insertTag('[Staccato]')">スタッカート</span>
-                            <span class="control-tag" onclick="insertTag('[Belting]')">ベルティング</span>
-                            <span class="control-tag" onclick="insertTag('[Whisper]')">ウィスパー</span>
-                            <span class="control-tag" onclick="insertTag('[Powerful]')">パワフル</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="example-section">
-                    <div class="example-title">💡 作成のコツ</div>
-                    <div class="example-text">
-                        • 句読点で区切る: 「あした。 世界が。」<br>
-                        • 構成タグは必須<br>
-                        • 歌唱タグで表現力UP
-                    </div>
-                </div>
-            </div>
-
-            <div class="right-panel">
-                <div class="lyrics-section">
-                    <div class="lyrics-header">
-                        <div class="lyrics-title">📝 歌詞編集</div>
-                        <div style="display: flex; gap: 6px; align-items: center;">
-                            <button class="btn btn-primary btn-small" onclick="copyToClipboard()">📋 コピー</button>
-                            <div class="char-count" id="char-count">0 文字</div>
-                        </div>
-                    </div>
-                    <textarea id="lyrics" placeholder="テンプレートを選択するか、ここに歌詞を入力..."></textarea>
-                </div>
-
-                <div class="output-section-bottom">
-                    <h3 style="font-size: 0.85em; color: #667eea; margin-bottom: 6px;">🎵 プロンプト</h3>
-                    <div class="output-box" id="output">プロンプトがここに表示されます...</div>
-                    <div class="output-actions">
-                        <button class="btn btn-secondary btn-small" onclick="clearAll()">🗑️ クリア</button>
-                    </div>
-                </div>
-            </div>
+        
+        <div class="label-group">Vocal</div>
+        <div class="tag-grid">
+            <button class="tag-btn" onclick="insertTag('[Staccato] ')"><span class="name">Staccato</span><span class="desc">短く切る</span></button>
+            <button class="tag-btn" onclick="insertTag('[Belting] ')"><span class="name">Belting</span><span class="desc">地声高音</span></button>
+            <button class="tag-btn" onclick="insertTag('[Whisper] ')"><span class="name">Whisper</span><span class="desc">ささやき</span></button>
+            <button class="tag-btn" onclick="insertTag('[Spoken] ')"><span class="name">Spoken</span><span class="desc">セリフ</span></button>
+            <button class="tag-btn" onclick="insertTag('[Shout] ')"><span class="name">Shout</span><span class="desc">叫び</span></button>
+            <button class="tag-btn" onclick="insertTag('[Vibrato] ')"><span class="name">Vibrato</span><span class="desc">揺らす</span></button>
+            <button class="tag-btn" onclick="insertTag('[Emotional] ')"><span class="name">Emo</span><span class="desc">情感豊か</span></button>
+            <button class="tag-btn" onclick="insertTag('[Explosion] ')"><span class="name">Explode</span><span class="desc">爆発的</span></button>
+            <button class="tag-btn" onclick="insertTag('[Blessing] ')"><span class="name">Blessing</span><span class="desc">吐息混じり</span></button>
         </div>
-    </div>
+        <div class="bottom-spacer"></div>
+    </aside>
 
-    <script>
-        const customTags = [];
-        const templates = {
-            rock: {
-                style: "Emotional Guitar Rock, J-Pop, Powerful Female Vocal, 95 BPM",
-                lyrics: `[Intro]\n[Acoustic Guitar]\n\n[Verse 1]\n[Soft]\n枯れた花。 揺れる影。\n\n[Chorus]\n[Powerful]\n明日世界が終わるとしても\n君の手を離さない\n[End]`
-            },
-            enka: {
-                style: "Enka, Dramatic Strings, Vibrato, 70 BPM",
-                lyrics: `[Intro]\n[Dramatic Strings]\n\n[Verse 1]\n身に纏うのは。 青い制服。\n\n[Chorus]\n[Powerful Enka]\n今。 警戒中。\n[End]`
-            },
-            symphonic: {
-                style: "Symphonic Metal, High Energy, Powerful Vocal, 190 BPM",
-                lyrics: `[Intro]\n[Dramatic Strings]\n\n[Verse 1]\n[Staccato]\n光。 闇。 交差する。\n\n[Chorus]\n[Maximum Energy]\n最強！ 無敵！\n[End]`
-            },
-            hyperpop: {
-                style: "Hyper-pop, Catchy, High Energy, 160 BPM",
-                lyrics: `[Chorus]\n[Catchy Hook]\nちゃんと。 確認。 しようか。\n[End]`
-            },
-            funk: {
-                style: "Modern Japanese Funk, Bouncy Bass, Groovy, 165 BPM",
-                lyrics: `[Intro]\n[Heavy Bass]\n\n[Verse 1]\n[Staccato]\n「一時」の。 迷い。\n\n[Chorus]\n[Groovy]\n讃えよ！\n[End]`
-            },
-            vocaloid: {
-                style: "Vocaloid Pop, Fast Electronic, Cute Vocal, 180 BPM",
-                lyrics: `[Intro]\n[Electronic]\n\n[Verse 1]\nデジタル。 世界で。\n\n[Chorus]\n電脳世界で。 踊ろうよ。\n[End]`
-            },
-            anime: {
-                style: "Anime Opening, J-Rock, Heroic, 175 BPM",
-                lyrics: `[Intro]\n[Dramatic Strings]\n\n[Verse 1]\n夜明けを。 待たずに。\n\n[Chorus]\n飛び立て！ 夢の彼方へ。\n[End]`
-            },
-            ballad: {
-                style: "Emotional Ballad, Piano, Soft Vocal, 75 BPM",
-                lyrics: `[Intro]\n[Piano]\n\n[Verse 1]\n[Whisper]\n静かに。 降る雨。\n\n[Chorus]\n[Belting]\n愛してた。 本当に。\n[End]`
-            },
-            citypop: {
-                style: "City Pop, Funk, Synth, Groovy, 110 BPM",
-                lyrics: `[Intro]\n[Synth Pad]\n\n[Verse 1]\n夜の街。 ネオン。\n\n[Chorus]\nシティライツ。\n[End]`
-            },
-            edm: {
-                style: "EDM, Heavy Bass Drop, High Energy, 128 BPM",
-                lyrics: `[Intro]\n[Build-up]\n\n[Verse 1]\nフロアが。 揺れる。\n\n[Chorus]\n[Drop]\nベースが。 爆発。\n[End]`
-            },
-            hiphop: {
-                style: "Japanese Hip Hop, Rap, Urban, 90 BPM",
-                lyrics: `[Intro]\n[Beat]\n\n[Verse 1]\n[Rap]\nマイクを握って。\n\n[Chorus]\n夢追いかけて。\n[End]`
-            },
-            idol: {
-                style: "Idol Pop, Cute, Cheerful, Dance Beat, 140 BPM",
-                lyrics: `[Intro]\n[Upbeat]\n\n[Verse 1]\n[Cute]\nおはよう。 世界。\n\n[Chorus]\n夢に向かって。\n[End]`
-            }
-        };
+    <main>
+        <textarea id="editor" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+    </main>
+</div>
 
-        document.getElementById('genre').addEventListener('change', generatePrompt);
-        document.getElementById('vocal-type').addEventListener('change', generatePrompt);
-        document.getElementById('bpm').addEventListener('input', generatePrompt);
-        document.getElementById('lyrics').addEventListener('input', function() {
-            updateCharCount();
-            generatePrompt();
-        });
-        document.getElementById('additional-tags').addEventListener('change', function() {
-            updateSelectedTags();
-            generatePrompt();
-        });
+<script>
+    const editor = document.getElementById('editor');
+    const saveNameInput = document.getElementById('saveName');
+    const loadSelect = document.getElementById('loadSelect');
 
-        function updateCharCount() {
-            const lyrics = document.getElementById('lyrics').value;
-            document.getElementById('char-count').textContent = `${lyrics.length} 文字`;
-        }
+    const defaultTemplate = `[Intro]: イントロ。
 
-        function updateSelectedTags() {
-            const select = document.getElementById('additional-tags');
-            customTags.length = 0;
-            Array.from(select.selectedOptions).forEach(option => {
-                customTags.push(option.value);
-            });
-            
-            const container = document.getElementById('selected-tags');
-            container.innerHTML = customTags.map((tag, index) => `
-                <span class="tag">
-                    ${tag}
-                    <span class="tag-remove" onclick="removeTag(${index})">×</span>
-                </span>
-            `).join('');
-        }
+[Verse1]: Aメロ
+[Pre-Chorus]: サビ前の盛り上がり。
+[Chorus]: サビ。
+[Interlude]：純粋な間奏（楽器ソロなど）。
 
-        function removeTag(index) {
-            const tagToRemove = customTags[index];
-            customTags.splice(index, 1);
-            
-            const select = document.getElementById('additional-tags');
-            Array.from(select.options).forEach(option => {
-                if (option.value === tagToRemove) {
-                    option.selected = false;
-                }
-            });
-            
-            updateSelectedTags();
-            generatePrompt();
-        }
+[Verse2]: Bメロ。
+[Pre-Chorus]: サビ前の盛り上がり。
+[Chorus]: サビ。
+[Bridge]: 間奏やCメロ。
 
-        function insertTag(tag) {
-            const lyricsField = document.getElementById('lyrics');
-            const start = lyricsField.selectionStart;
-            const text = lyricsField.value;
-            
-            lyricsField.value = text.substring(0, start) + tag + '\n' + text.substring(start);
-            lyricsField.focus();
-            lyricsField.selectionStart = lyricsField.selectionEnd = start + tag.length + 1;
-            
-            updateCharCount();
-            generatePrompt();
-        }
+[Outro]: アウトロ。
+[End]: 終了の合図。`;
 
-        function loadTemplate(templateName) {
-            const template = templates[templateName];
-            if (template) {
-                document.querySelectorAll('.template-card').forEach(card => {
-                    card.classList.remove('active');
-                });
-                document.querySelector(`.template-card[data-template="${templateName}"]`).classList.add('active');
-                
-                document.getElementById('lyrics').value = template.lyrics;
-                
-                const styleTags = template.style.split(', ');
-                customTags.length = 0;
-                
-                const bpmMatch = template.style.match(/(\d+)\s*BPM/);
-                if (bpmMatch) {
-                    document.getElementById('bpm').value = bpmMatch[1];
-                }
-                
-                const select = document.getElementById('additional-tags');
-                Array.from(select.options).forEach(option => option.selected = false);
-                
-                updateSelectedTags();
-                updateCharCount();
-                generatePrompt();
+    window.onload = () => {
+        editor.value = defaultTemplate;
+        updateLoadList();
+    };
+
+    function insertTag(tag) {
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        const text = editor.value;
+        editor.value = text.substring(0, start) + tag + text.substring(end);
+        const newPos = start + tag.length;
+        editor.focus();
+        editor.setSelectionRange(newPos, newPos);
+    }
+
+    function saveTemplate() {
+        const name = saveNameInput.value.trim();
+        if (!name) return;
+        localStorage.setItem('suno_pwa_' + name, editor.value);
+        updateLoadList();
+        alert("保存しました");
+    }
+
+    function updateLoadList() {
+        loadSelect.innerHTML = '<option value="">読込</option>';
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('suno_pwa_')) {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = key.replace('suno_pwa_', '');
+                loadSelect.appendChild(option);
             }
         }
+    }
 
-        function generatePrompt() {
-            const genre = document.getElementById('genre').value;
-            const vocalType = document.getElementById('vocal-type').value;
-            const bpm = document.getElementById('bpm').value;
-            const lyrics = document.getElementById('lyrics').value;
-            
-            const styleParts = [];
-            if (genre) styleParts.push(genre);
-            if (vocalType) styleParts.push(vocalType);
-            customTags.forEach(tag => styleParts.push(tag));
-            if (bpm) styleParts.push(`${bpm} BPM`);
-            
-            const style = styleParts.join(', ');
-            const output = `Style: ${style || '(スタイルを指定してください)'}\n\nLyrics:\n${lyrics || '(歌詞を入力してください)'}`;
-            document.getElementById('output').textContent = output;
-        }
+    function loadTemplate() {
+        const key = loadSelect.value;
+        if (!key) return;
+        editor.value = localStorage.getItem(key);
+        saveNameInput.value = key.replace('suno_pwa_', '');
+    }
 
-        function copyToClipboard() {
-            const output = document.getElementById('output').textContent;
-            navigator.clipboard.writeText(output).then(() => {
-                alert('コピーしました！');
+    // PWA: サービスワーカー登録
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').then(reg => {
+                console.log('SW registered:', reg);
+            }).catch(err => {
+                console.log('SW registration failed:', err);
             });
-        }
+        });
+    }
 
-        function clearAll() {
-            document.getElementById('genre').value = '';
-            document.getElementById('vocal-type').value = '';
-            document.getElementById('bpm').value = '';
-            document.getElementById('lyrics').value = '';
-            customTags.length = 0;
-            const select = document.getElementById('additional-tags');
-            Array.from(select.options).forEach(option => option.selected = false);
-            document.querySelectorAll('.template-card').forEach(card => card.classList.remove('active'));
-            updateSelectedTags();
-            updateCharCount();
-            document.getElementById('output').textContent = 'プロンプトがここに表示されます...';
+    document.addEventListener('touchmove', function (e) {
+        if (e.target.tagName !== 'TEXTAREA' && !e.target.closest('#tag-sidebar')) {
+            e.preventDefault();
         }
+    }, { passive: false });
+</script>
 
-        // 初期化
-        generatePrompt();
-        updateCharCount();
-
-        // Service Worker 登録
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker registered'))
-                    .catch(err => console.log('Service Worker registration failed', err));
-            });
-        }
-    </script>
 </body>
 </html>

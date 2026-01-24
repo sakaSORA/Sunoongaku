@@ -1,21 +1,17 @@
 {
-  "name": "Suno AI プロンプトジェネレーター",
-  "short_name": "SunoGen",
-  "description": "Suno AI向けのプロンプトを簡単に作成できるツール",
+  "name": "Suno AI・テンプちゃん",
+  "short_name": "テンプちゃん",
+  "description": "Suno AI歌詞テンプレート作成ツール",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#764ba2",
-  "theme_color": "#667eea",
+  "background_color": "#ffffff",
+  "theme_color": "#e5e5e5",
   "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
