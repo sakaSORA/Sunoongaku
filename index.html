@@ -16,151 +16,78 @@
             --border: #ddd;
             --font-ui: 11px;
             --font-tag: 10px;
-            --font-editor: 10px;
-            --header-h: 40px;
+            --font-editor: 10px; /* タグと同じサイズ */
+            --header-h: 40px; /* 1段に戻して作業エリアを拡大 */
             --sidebar-w: 100px;
         }
 
         html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            position: fixed;
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            overflow: hidden; position: fixed;
         }
 
-        body {
-            font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            background: var(--bg);
-        }
+        body { font-family: sans-serif; display: flex; flex-direction: column; background: var(--bg); }
 
+        /* ヘッダー：1段に集約 */
         header {
-            background: #e5e5e5;
-            padding: 4px 6px;
-            display: flex;
-            gap: 4px;
-            height: var(--header-h);
-            align-items: center;
-            flex-shrink: 0;
-            border-bottom: 1px solid var(--border);
-            z-index: 100;
+            background: #e5e5e5; padding: 4px 6px; display: flex; gap: 5px;
+            height: var(--header-h); align-items: center; flex-shrink: 0;
+            border-bottom: 1px solid var(--border); z-index: 100;
         }
 
-        input[type="text"], select {
-            font-size: var(--font-ui);
-            height: 32px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 0 4px;
+        input[type="text"] { 
+            font-size: var(--font-ui); height: 32px; border: 1px solid #ccc; 
+            border-radius: 4px; padding: 0 6px; flex: 1; min-width: 0;
         }
-        #saveName { flex: 2; min-width: 0; }
-        #loadSelect { flex: 1.5; min-width: 0; }
+        
+        .btn-ui { 
+            font-size: var(--font-ui); height: 32px; min-width: 70px; 
+            border: 1px solid #bbb; border-radius: 4px; font-weight: bold; 
+            flex: 0 0 auto;
+        }
+        .btn-import { background: #bbdefb; border-color: #90caf9; }
+        .btn-export { background: #c8e6c9; border-color: #a5d6a7; }
+        .btn-ui:active { opacity: 0.7; }
 
-        .btn-ui {
-            font-size: var(--font-ui);
-            height: 32px;
-            min-width: 65px;
-            background: #d0d0d0;
-            border: 1px solid #bbb;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-
-        #content-wrapper {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
+        #content-wrapper { display: flex; flex: 1; overflow: hidden; }
 
         #tag-sidebar {
-            width: var(--sidebar-w);
-            background: var(--panel-bg);
-            border-right: 1px solid var(--border);
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: 4px;
-            flex-shrink: 0;
-            overscroll-behavior: contain;
+            width: var(--sidebar-w); background: var(--panel-bg); border-right: 1px solid var(--border);
+            overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 4px; flex-shrink: 0; overscroll-behavior: contain;
         }
 
-        .label-group {
-            font-size: 8px;
-            color: #888;
-            margin: 10px 0 4px 2px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .tag-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
+        .label-group { font-size: 8px; color: #888; margin: 10px 0 4px 2px; font-weight: bold; text-transform: uppercase; }
+        .tag-grid { display: flex; flex-direction: column; gap: 5px; }
 
         .tag-btn {
-            background: #fff;
-            border: 1px solid #ccc;
-            width: 100%;
-            min-height: 44px;
-            border-radius: 4px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            background: #fff; border: 1px solid #ccc; width: 100%; min-height: 44px;
+            border-radius: 4px; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; padding: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
+        .tag-btn .name { font-size: var(--font-tag); font-weight: bold; color: #111; }
+        .tag-btn .desc { font-size: 8px; color: #666; transform: scale(0.85); text-align: center; }
+        .tag-btn:active { background: #d0e0ff; }
 
-        .tag-btn .name {
-            font-size: var(--font-tag);
-            font-weight: bold;
-            color: #111;
-        }
-        .tag-btn .desc {
-            font-size: 8px;
-            color: #666;
-            transform: scale(0.85);
-            text-align: center;
-        }
-        .tag-btn:active { background: #d0e0ff; border-color: #99b; }
+        .bottom-spacer { height: 60dvh; pointer-events: none; }
 
-        .bottom-spacer {
-            height: 60dvh;
-            pointer-events: none;
-        }
-
-        main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #fff;
-        }
+        main { flex: 1; display: flex; flex-direction: column; background: #fff; }
 
         textarea {
-            width: 100%;
-            height: 100%;
-            border: none;
-            padding: 8px;
-            font-size: var(--font-editor);
-            line-height: 1.4;
-            resize: none;
-            outline: none;
-            overflow-y: auto;
-            overscroll-behavior: contain;
-            -webkit-overflow-scrolling: touch;
+            width: 100%; height: 100%; border: none; padding: 8px;
+            font-size: var(--font-editor); line-height: 1.4; resize: none;
+            outline: none; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
         }
+
+        #importFile { display: none; }
     </style>
 </head>
 <body>
 
 <header>
-    <input type="text" id="saveName" placeholder="保存名">
-    <button class="btn-ui" onclick="saveTemplate()">保存</button>
-    <select id="loadSelect"><option value="">読込</option></select>
-    <button class="btn-ui" onclick="loadTemplate()">開く</button>
+    <input type="text" id="saveName" placeholder="ファイル名">
+    <button class="btn-ui btn-import" onclick="triggerImport()">取込</button>
+    <button class="btn-ui btn-export" onclick="exportTemplate()">出力</button>
+    <input type="file" id="importFile" accept=".txt,.lrc" onchange="importTemplate(event)">
 </header>
 
 <div id="content-wrapper">
@@ -201,26 +128,11 @@
 <script>
     const editor = document.getElementById('editor');
     const saveNameInput = document.getElementById('saveName');
-    const loadSelect = document.getElementById('loadSelect');
 
-    const defaultTemplate = `[Intro]: イントロ。
-
-[Verse1]: Aメロ
-[Pre-Chorus]: サビ前の盛り上がり。
-[Chorus]: サビ。
-[Interlude]：純粋な間奏（楽器ソロなど）。
-
-[Verse2]: Bメロ。
-[Pre-Chorus]: サビ前の盛り上がり。
-[Chorus]: サビ。
-[Bridge]: 間奏やCメロ。
-
-[Outro]: アウトロ。
-[End]: 終了の合図。`;
+    const defaultTemplate = `[Intro]: イントロ。\n\n[Verse1]: Aメロ\n[Pre-Chorus]: サビ前の盛り上がり。\n[Chorus]: サビ。\n[Interlude]：純粋な間奏（楽器ソロなど）。\n\n[Verse2]: Bメロ。\n[Pre-Chorus]: サビ前の盛り上がり。\n[Chorus]: サビ。\n[Bridge]: 間奏やCメロ。\n\n[Outro]: アウトロ。\n[End]: 終了の合図。`;
 
     window.onload = () => {
         editor.value = defaultTemplate;
-        updateLoadList();
     };
 
     function insertTag(tag) {
@@ -233,41 +145,50 @@
         editor.setSelectionRange(newPos, newPos);
     }
 
-    function saveTemplate() {
-        const name = saveNameInput.value.trim();
-        if (!name) return;
-        localStorage.setItem('suno_pwa_' + name, editor.value);
-        updateLoadList();
-        alert("保存しました");
+    // エクスポート (UTF-8固定)
+    function exportTemplate() {
+        const text = editor.value;
+        // UTF-8のBOM（Byte Order Mark）を付与して互換性を高める
+        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+        const blob = new Blob([bom, text], { type: 'text/plain;charset=utf-8' });
+        
+        const a = document.createElement('a');
+        const fileName = (saveNameInput.value.trim() || 'suno_lyrics') + '.txt';
+        a.href = URL.createObjectURL(blob);
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(a.href);
     }
 
-    function updateLoadList() {
-        loadSelect.innerHTML = '<option value="">読込</option>';
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key.startsWith('suno_pwa_')) {
-                const option = document.createElement('option');
-                option.value = key;
-                option.textContent = key.replace('suno_pwa_', '');
-                loadSelect.appendChild(option);
-            }
-        }
+    // インポート
+    function triggerImport() {
+        document.getElementById('importFile').click();
     }
 
-    function loadTemplate() {
-        const key = loadSelect.value;
-        if (!key) return;
-        editor.value = localStorage.getItem(key);
-        saveNameInput.value = key.replace('suno_pwa_', '');
+    function importTemplate(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            editor.value = e.target.result;
+            saveNameInput.value = file.name.replace(/\.[^/.]+$/, "");
+        };
+        reader.readAsText(file);
+        event.target.value = "";
     }
 
-    // PWA: サービスワーカー登録
+    // PWA & SW 登録
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js').then(reg => {
-                console.log('SW registered:', reg);
-            }).catch(err => {
-                console.log('SW registration failed:', err);
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            location.reload();
+                        }
+                    });
+                });
             });
         });
     }
