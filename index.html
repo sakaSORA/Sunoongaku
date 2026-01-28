@@ -15,38 +15,31 @@
             --panel-bg: #f0f0f0;
             --border: #ddd;
             --font-ui: 11px;
-            --font-tag: 10px;
-            --font-editor: 10px; /* タグと同じサイズ */
-            --header-h: 40px; /* 1段に戻して作業エリアを拡大 */
-            --sidebar-w: 100px;
+            --font-tag: 8px;
+            --font-editor: 10px;
+            --header-h: 74px; /* 2段固定 */
+            --sidebar-w: 135px;
         }
 
-        html, body {
-            margin: 0; padding: 0; height: 100%; width: 100%;
-            overflow: hidden; position: fixed;
-        }
-
+        html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; position: fixed; }
         body { font-family: sans-serif; display: flex; flex-direction: column; background: var(--bg); }
 
-        /* ヘッダー：1段に集約 */
         header {
-            background: #e5e5e5; padding: 4px 6px; display: flex; gap: 5px;
-            height: var(--header-h); align-items: center; flex-shrink: 0;
-            border-bottom: 1px solid var(--border); z-index: 100;
+            background: #e5e5e5; padding: 4px; display: flex; flex-direction: column; gap: 4px;
+            height: var(--header-h); flex-shrink: 0; border-bottom: 1px solid var(--border); z-index: 100;
         }
+        .header-row { display: flex; gap: 3px; align-items: center; width: 100%; }
 
-        input[type="text"] { 
-            font-size: var(--font-ui); height: 32px; border: 1px solid #ccc; 
-            border-radius: 4px; padding: 0 6px; flex: 1; min-width: 0;
-        }
+        input[type="text"] { font-size: var(--font-ui); height: 30px; border: 1px solid #ccc; border-radius: 4px; padding: 0 5px; min-width: 0; }
+        #saveName { flex: 2; }
+        #findStr, #replaceStr { flex: 1.5; background: #fff; } /* 置換入力欄 */
+
+        .btn-ui { font-size: var(--font-ui); height: 30px; min-width: 50px; border: 1px solid #bbb; border-radius: 4px; font-weight: bold; flex: 0 0 auto; padding: 0 4px; }
         
-        .btn-ui { 
-            font-size: var(--font-ui); height: 32px; min-width: 70px; 
-            border: 1px solid #bbb; border-radius: 4px; font-weight: bold; 
-            flex: 0 0 auto;
-        }
-        .btn-import { background: #bbdefb; border-color: #90caf9; }
-        .btn-export { background: #c8e6c9; border-color: #a5d6a7; }
+        .btn-import { background: #bbdefb; }
+        .btn-export { background: #c8e6c9; }
+        .btn-clear { background: #ffcdd2; min-width: 45px; }
+        .btn-replace { background: #e1bee7; min-width: 45px; }
         .btn-ui:active { opacity: 0.7; }
 
         #content-wrapper { display: flex; flex: 1; overflow: hidden; }
@@ -56,66 +49,80 @@
             overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 4px; flex-shrink: 0; overscroll-behavior: contain;
         }
 
-        .label-group { font-size: 8px; color: #888; margin: 10px 0 4px 2px; font-weight: bold; text-transform: uppercase; }
-        .tag-grid { display: flex; flex-direction: column; gap: 5px; }
+        .label-group { font-size: 8px; color: #888; margin: 8px 0 3px 2px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #ccc; }
+        .tag-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin-bottom: 10px; }
 
         .tag-btn {
-            background: #fff; border: 1px solid #ccc; width: 100%; min-height: 44px;
-            border-radius: 4px; display: flex; flex-direction: column; justify-content: center;
-            align-items: center; padding: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            background: #fff; border: 1px solid #ccc; width: 100%; min-height: 42px;
+            border-radius: 3px; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; padding: 1px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
-        .tag-btn .name { font-size: var(--font-tag); font-weight: bold; color: #111; }
-        .tag-btn .desc { font-size: 8px; color: #666; transform: scale(0.85); text-align: center; }
+        .tag-btn .name { font-size: 8px; font-weight: bold; color: #000; text-align: center; line-height: 1.1; margin-bottom: 1px; }
+        .tag-btn .jp { font-size: 7px; color: #666; transform: scale(0.9); }
         .tag-btn:active { background: #d0e0ff; }
 
         .bottom-spacer { height: 60dvh; pointer-events: none; }
 
         main { flex: 1; display: flex; flex-direction: column; background: #fff; }
-
         textarea {
             width: 100%; height: 100%; border: none; padding: 8px;
             font-size: var(--font-editor); line-height: 1.4; resize: none;
             outline: none; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
         }
-
         #importFile { display: none; }
     </style>
 </head>
 <body>
 
 <header>
-    <input type="text" id="saveName" placeholder="ファイル名">
-    <button class="btn-ui btn-import" onclick="triggerImport()">取込</button>
-    <button class="btn-ui btn-export" onclick="exportTemplate()">出力</button>
-    <input type="file" id="importFile" accept=".txt,.lrc" onchange="importTemplate(event)">
+    <div class="header-row">
+        <input type="text" id="saveName" placeholder="ファイル名">
+        <button class="btn-ui btn-import" onclick="triggerImport()">取込</button>
+        <button class="btn-ui btn-export" onclick="exportTemplate()">出力</button>
+    </div>
+    <div class="header-row">
+        <button class="btn-ui btn-clear" onclick="clearAll()">消去</button>
+        <input type="text" id="findStr" placeholder="検索">
+        <span style="font-size:10px; color:#666;">→</span>
+        <input type="text" id="replaceStr" placeholder="置換">
+        <button class="btn-ui btn-replace" onclick="execReplace()">実行</button>
+    </div>
+    <input type="file" id="importFile" accept=".txt" onchange="importTemplate(event)">
 </header>
 
 <div id="content-wrapper">
     <aside id="tag-sidebar">
         <div class="label-group">Structure</div>
         <div class="tag-grid">
-            <button class="tag-btn" onclick="insertTag('[Intro]\n')"><span class="name">Intro</span><span class="desc">イントロ</span></button>
-            <button class="tag-btn" onclick="insertTag('[Verse1]\n')"><span class="name">Verse1</span><span class="desc">Aメロ</span></button>
-            <button class="tag-btn" onclick="insertTag('[Pre-Chorus]\n')"><span class="name">Pre-Cho</span><span class="desc">サビ前</span></button>
-            <button class="tag-btn" onclick="insertTag('[Chorus]\n')"><span class="name">Chorus</span><span class="desc">サビ</span></button>
-            <button class="tag-btn" onclick="insertTag('[Interlude]\n')"><span class="name">Inter</span><span class="desc">間奏</span></button>
-            <button class="tag-btn" onclick="insertTag('[Verse2]\n')"><span class="name">Verse2</span><span class="desc">Bメロ</span></button>
-            <button class="tag-btn" onclick="insertTag('[Bridge]\n')"><span class="name">Bridge</span><span class="desc">Cメロ</span></button>
-            <button class="tag-btn" onclick="insertTag('[Outro]\n')"><span class="name">Outro</span><span class="desc">アウトロ</span></button>
-            <button class="tag-btn" onclick="insertTag('[End]\n')"><span class="name">End</span><span class="desc">終了合図</span></button>
+            <button class="tag-btn" onclick="insertTag('[Intro]\n')"><span class="name">Intro</span><span class="jp">序奏</span></button>
+            <button class="tag-btn" onclick="insertTag('[Verse1]\n')"><span class="name">Verse1</span><span class="jp">Aメロ</span></button>
+            <button class="tag-btn" onclick="insertTag('[Pre-Chorus]\n')"><span class="name">PreCho</span><span class="jp">サビ前</span></button>
+            <button class="tag-btn" onclick="insertTag('[Chorus]\n')"><span class="name">Chorus</span><span class="jp">サビ</span></button>
+            <button class="tag-btn" onclick="insertTag('[Interlude]\n')"><span class="name">Inter</span><span class="jp">間奏</span></button>
+            <button class="tag-btn" onclick="insertTag('[Verse2]\n')"><span class="name">Verse2</span><span class="jp">Bメロ</span></button>
+            <button class="tag-btn" onclick="insertTag('[Bridge]\n')"><span class="name">Bridge</span><span class="jp">展開</span></button>
+            <button class="tag-btn" onclick="insertTag('[Outro]\n')"><span class="name">Outro</span><span class="jp">終奏</span></button>
+            <button class="tag-btn" onclick="insertTag('[End]\n')"><span class="name">End</span><span class="jp">終了</span></button>
         </div>
         
-        <div class="label-group">Vocal</div>
+        <div class="label-group">Vocal Styles</div>
         <div class="tag-grid">
-            <button class="tag-btn" onclick="insertTag('[Staccato] ')"><span class="name">Staccato</span><span class="desc">短く切る</span></button>
-            <button class="tag-btn" onclick="insertTag('[Belting] ')"><span class="name">Belting</span><span class="desc">地声高音</span></button>
-            <button class="tag-btn" onclick="insertTag('[Whisper] ')"><span class="name">Whisper</span><span class="desc">ささやき</span></button>
-            <button class="tag-btn" onclick="insertTag('[Spoken] ')"><span class="name">Spoken</span><span class="desc">セリフ</span></button>
-            <button class="tag-btn" onclick="insertTag('[Shout] ')"><span class="name">Shout</span><span class="desc">叫び</span></button>
-            <button class="tag-btn" onclick="insertTag('[Vibrato] ')"><span class="name">Vibrato</span><span class="desc">揺らす</span></button>
-            <button class="tag-btn" onclick="insertTag('[Emotional] ')"><span class="name">Emo</span><span class="desc">情感豊か</span></button>
-            <button class="tag-btn" onclick="insertTag('[Explosion] ')"><span class="name">Explode</span><span class="desc">爆発的</span></button>
-            <button class="tag-btn" onclick="insertTag('[Blessing] ')"><span class="name">Blessing</span><span class="desc">吐息混じり</span></button>
+            <button class="tag-btn" onclick="insertTag('[Staccato] ')"><span class="name">Staccato</span><span class="jp">短く</span></button>
+            <button class="tag-btn" onclick="insertTag('[Belting] ')"><span class="name">Belting</span><span class="jp">力強く</span></button>
+            <button class="tag-btn" onclick="insertTag('[Whisper] ')"><span class="name">Whisper</span><span class="jp">ささやき</span></button>
+            <button class="tag-btn" onclick="insertTag('[Spoken] ')"><span class="name">Spoken</span><span class="jp">セリフ</span></button>
+            <button class="tag-btn" onclick="insertTag('[Shout] ')"><span class="name">Shout</span><span class="jp">叫び</span></button>
+            <button class="tag-btn" onclick="insertTag('[Vibrato] ')"><span class="name">Vibrato</span><span class="jp">揺らす</span></button>
+            <button class="tag-btn" onclick="insertTag('[Emotional] ')"><span class="name">Emo</span><span class="jp">情感</span></button>
+            <button class="tag-btn" onclick="insertTag('[High Note] ')"><span class="name">High</span><span class="jp">高音</span></button>
+            <button class="tag-btn" onclick="insertTag('[Ad-lib] ')"><span class="name">Ad-lib</span><span class="jp">自由</span></button>
+            <button class="tag-btn" onclick="insertTag('[Repeat] ')"><span class="name">Repeat</span><span class="jp">反復</span></button>
+            <button class="tag-btn" onclick="insertTag('[Refrain] ')"><span class="name">Refrain</span><span class="jp">繰返し</span></button>
+            <button class="tag-btn" onclick="insertTag('[Powerful Belting] ')"><span class="name">P.Belt</span><span class="jp">超力強</span></button>
+            <button class="tag-btn" onclick="insertTag('[Scat] ')"><span class="name">Scat</span><span class="jp">スキャット</span></button>
+            <button class="tag-btn" onclick="insertTag('[Fortissimo] ')"><span class="name">f-simo</span><span class="jp">強烈</span></button>
+            <button class="tag-btn" onclick="insertTag('[Explosion] ')"><span class="name">Explode</span><span class="jp">爆発</span></button>
+            <button class="tag-btn" onclick="insertTag('[Blessing] ')"><span class="name">Blessing</span><span class="jp">吐息</span></button>
         </div>
         <div class="bottom-spacer"></div>
     </aside>
@@ -128,12 +135,12 @@
 <script>
     const editor = document.getElementById('editor');
     const saveNameInput = document.getElementById('saveName');
+    const findStrInput = document.getElementById('findStr');
+    const replaceStrInput = document.getElementById('replaceStr');
 
     const defaultTemplate = `[Intro]: イントロ。\n\n[Verse1]: Aメロ\n[Pre-Chorus]: サビ前の盛り上がり。\n[Chorus]: サビ。\n[Interlude]：純粋な間奏（楽器ソロなど）。\n\n[Verse2]: Bメロ。\n[Pre-Chorus]: サビ前の盛り上がり。\n[Chorus]: サビ。\n[Bridge]: 間奏やCメロ。\n\n[Outro]: アウトロ。\n[End]: 終了の合図。`;
 
-    window.onload = () => {
-        editor.value = defaultTemplate;
-    };
+    window.onload = () => { editor.value = defaultTemplate; };
 
     function insertTag(tag) {
         const start = editor.selectionStart;
@@ -145,13 +152,28 @@
         editor.setSelectionRange(newPos, newPos);
     }
 
-    // エクスポート (UTF-8固定)
+    // 極力シンプルな確認ダイアログ
+    function clearAll() {
+        if (confirm("消去？")) {
+            editor.value = "";
+            editor.focus();
+        }
+    }
+
+    // 入力欄から直接置換を実行
+    function execReplace() {
+        const findVal = findStrInput.value;
+        if (!findVal) return;
+        const replaceVal = replaceStrInput.value;
+        const escapedFind = findVal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(escapedFind, 'g');
+        editor.value = editor.value.replace(regex, replaceVal);
+    }
+
     function exportTemplate() {
         const text = editor.value;
-        // UTF-8のBOM（Byte Order Mark）を付与して互換性を高める
         const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
         const blob = new Blob([bom, text], { type: 'text/plain;charset=utf-8' });
-        
         const a = document.createElement('a');
         const fileName = (saveNameInput.value.trim() || 'suno_lyrics') + '.txt';
         a.href = URL.createObjectURL(blob);
@@ -160,10 +182,7 @@
         URL.revokeObjectURL(a.href);
     }
 
-    // インポート
-    function triggerImport() {
-        document.getElementById('importFile').click();
-    }
+    function triggerImport() { document.getElementById('importFile').click(); }
 
     function importTemplate(event) {
         const file = event.target.files[0];
@@ -177,28 +196,13 @@
         event.target.value = "";
     }
 
-    // PWA & SW 登録
     if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js').then(reg => {
-                reg.addEventListener('updatefound', () => {
-                    const newWorker = reg.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            location.reload();
-                        }
-                    });
-                });
-            });
-        });
+        window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); });
     }
 
     document.addEventListener('touchmove', function (e) {
-        if (e.target.tagName !== 'TEXTAREA' && !e.target.closest('#tag-sidebar')) {
-            e.preventDefault();
-        }
+        if (e.target.tagName !== 'TEXTAREA' && !e.target.closest('#tag-sidebar')) { e.preventDefault(); }
     }, { passive: false });
 </script>
-
 </body>
 </html>

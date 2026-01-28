@@ -1,5 +1,5 @@
 // バージョン管理：更新時はここを変更してPushしてください
-const CACHE_NAME = 'suno-temp-v3'; 
+const CACHE_NAME = 'suno-temp-v4'; 
 const ASSETS = [
   './',
   './index.html',
